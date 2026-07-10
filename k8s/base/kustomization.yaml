@@ -4,7 +4,6 @@ kind: Kustomization
 resources:
   - namespace/namespace.yaml
   - postgres/secret.yaml
-  - postgres/configmap-init.yaml
   - postgres/deployment.yaml
   - keycloak/deployment.yaml
   - user-service/serviceaccount.yaml
@@ -16,10 +15,14 @@ resources:
   - admin-service/secret.yaml
   - admin-service/deployment.yaml
 
-# Generates the "keycloak-realm-config" ConfigMap referenced by keycloak/deployment.yaml
-# directly from the canonical realm file, so there's exactly one copy of the realm definition.
+# Generates ConfigMaps directly from the same canonical files docker-compose.yml mounts, so
+# there's exactly one copy each of the realm definition and the DB init script.
 configMapGenerator:
   - name: keycloak-realm-config
     namespace: enterprise-security
     files:
       - ../../keycloak/realm-export.json
+  - name: postgres-init-scripts
+    namespace: enterprise-security
+    files:
+      - init.sql=../../db/postgres-init.sql

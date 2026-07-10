@@ -38,6 +38,9 @@ subprojects {
 
     if (project.name in bootModules) {
         apply(plugin = "org.springframework.boot")
+        // Only the executable bootJar is a meaningful artifact for these modules; the plain jar
+        // Boot's plugin also builds by default would just be a partial, non-runnable duplicate.
+        tasks.findByName("jar")?.let { it.enabled = false }
     } else {
         // library modules (common-security): produce a plain jar, no executable boot jar
         tasks.findByName("bootJar")?.let { it.enabled = false }
