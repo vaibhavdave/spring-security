@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace/namespace.yaml
+  - postgres/secret.yaml
+  - postgres/configmap-init.yaml
+  - postgres/deployment.yaml
+  - keycloak/deployment.yaml
+  - user-service/serviceaccount.yaml
+  - user-service/deployment.yaml
+  - order-service/serviceaccount.yaml
+  - order-service/secret.yaml
+  - order-service/deployment.yaml
+  - admin-service/serviceaccount.yaml
+  - admin-service/secret.yaml
+  - admin-service/deployment.yaml
+
+# Generates the "keycloak-realm-config" ConfigMap referenced by keycloak/deployment.yaml
+# directly from the canonical realm file, so there's exactly one copy of the realm definition.
+configMapGenerator:
+  - name: keycloak-realm-config
+    namespace: enterprise-security
+    files:
+      - ../../keycloak/realm-export.json

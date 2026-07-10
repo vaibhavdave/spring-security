@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../base
+  - peer-authentication.yaml
+  - gateway.yaml
+  - virtualservice.yaml
+  - request-authentication.yaml
+  - authorization-policy-keycloak.yaml
+  - authorization-policy-user-service.yaml
+  - authorization-policy-order-service.yaml
+  - authorization-policy-admin-service.yaml
+  - authorization-policy-postgres.yaml

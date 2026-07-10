@@ -1,0 +1,17 @@
+# HTTP-only ingress for local/demo use. A real deployment would terminate TLS here (a Secret
+# holding the cert, credentialName + HTTPS server block) rather than serving plaintext on :80.
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: enterprise-gateway
+  namespace: enterprise-security
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "api.enterprise-security.local"

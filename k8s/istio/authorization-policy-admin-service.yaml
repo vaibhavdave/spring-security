@@ -1,0 +1,30 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: admin-service-authz
+  namespace: enterprise-security
+spec:
+  selector:
+    matchLabels:
+      app: admin-service
+  action: ALLOW
+  rules:
+    # Staff traffic: Keycloak JWT required.
+    - from:
+        - source:
+            principals: ["cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"]
+      to:
+        - operation:
+            paths: ["/api/documents/*", "/actuator/health*"]
+      when:
+        - key: request.auth.claims[iss]
+          values: ["http://keycloak.enterprise-security.svc.cluster.local:8080/realms/enterprise"]
+    # Partner traffic: authenticates with X-API-Key at the application layer instead of a
+    # Keycloak JWT, so this rule only constrains *where the request may come from*
+    # (through the ingress gateway) — the credential itself is checked by ApiKeyAuthFilter.
+    - from:
+        - source:
+            principals: ["cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"]
+      to:
+        - operation:
+            paths: ["/partner/documents/*"]

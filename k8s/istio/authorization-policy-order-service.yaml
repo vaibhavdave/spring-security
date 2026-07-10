@@ -1,0 +1,20 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: order-service-authz
+  namespace: enterprise-security
+spec:
+  selector:
+    matchLabels:
+      app: order-service
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"]
+      to:
+        - operation:
+            paths: ["/api/orders/*", "/actuator/health*"]
+      when:
+        - key: request.auth.claims[iss]
+          values: ["http://keycloak.enterprise-security.svc.cluster.local:8080/realms/enterprise"]

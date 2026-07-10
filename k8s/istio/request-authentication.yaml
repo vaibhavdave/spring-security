@@ -1,0 +1,29 @@
+# Two layers of the same JWT check, deliberately overlapping with Spring Security's own
+# validation in each service: the ingress gateway validates tokens for anything entering the
+# mesh, and each service validates again for anything reaching it — a compromised or
+# misconfigured route inside the mesh still can't smuggle an unvalidated/forged token through.
+apiVersion: security.istio.io/v1
+kind: RequestAuthentication
+metadata:
+  name: keycloak-jwt-ingress
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      istio: ingressgateway
+  jwtRules:
+    - issuer: "http://keycloak.enterprise-security.svc.cluster.local:8080/realms/enterprise"
+      jwksUri: "http://keycloak.enterprise-security.svc.cluster.local:8080/realms/enterprise/protocol/openid-connect/certs"
+      forwardOriginalToken: true
+---
+apiVersion: security.istio.io/v1
+kind: RequestAuthentication
+metadata:
+  name: keycloak-jwt-services
+  namespace: enterprise-security
+spec:
+  # No selector: applies to every workload in the namespace.
+  jwtRules:
+    - issuer: "http://keycloak.enterprise-security.svc.cluster.local:8080/realms/enterprise"
+      jwksUri: "http://keycloak.enterprise-security.svc.cluster.local:8080/realms/enterprise/protocol/openid-connect/certs"
+      forwardOriginalToken: true

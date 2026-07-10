@@ -1,0 +1,31 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: user-service-authz
+  namespace: enterprise-security
+spec:
+  selector:
+    matchLabels:
+      app: user-service
+  action: ALLOW
+  rules:
+    # End-user traffic: anything that made it through the ingress gateway with a JWT Istio
+    # already validated (RequestAuthentication populates request.auth.claims only for valid tokens).
+    - from:
+        - source:
+            principals: ["cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"]
+      to:
+        - operation:
+            paths: ["/api/users/*", "/actuator/health*"]
+      when:
+        - key: request.auth.claims[iss]
+          values: ["http://keycloak.enterprise-security.svc.cluster.local:8080/realms/enterprise"]
+    # Service-to-service traffic: only order-service's workload identity may reach /internal/**,
+    # enforced here via mTLS-backed SPIFFE identity — a separate, orthogonal control from the
+    # hasRole('SERVICE') check Spring Security applies to the same claim inside the JWT.
+    - from:
+        - source:
+            principals: ["cluster.local/ns/enterprise-security/sa/order-service"]
+      to:
+        - operation:
+            paths: ["/internal/*"]

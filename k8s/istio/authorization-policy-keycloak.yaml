@@ -1,0 +1,22 @@
+# Keycloak needs to be reachable both from outside (browser login, ingress-routed token/userinfo
+# calls) and from every service in-mesh (OIDC discovery + JWKS fetch, client-credentials token
+# requests). Unlike the app services, it isn't scoped to a handful of paths since it is itself an
+# infrastructure dependency, but it's still restricted to known callers rather than left open to
+# the whole cluster.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: keycloak-authz
+  namespace: enterprise-security
+spec:
+  selector:
+    matchLabels:
+      app: keycloak
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"]
+    - from:
+        - source:
+            namespaces: ["enterprise-security"]

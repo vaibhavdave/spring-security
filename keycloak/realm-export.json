@@ -1,0 +1,174 @@
+{
+  "realm": "enterprise",
+  "enabled": true,
+  "displayName": "Enterprise Security Demo",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "revokeRefreshToken": true,
+  "refreshTokenMaxReuse": 0,
+  "roles": {
+    "realm": [
+      { "name": "ADMIN", "description": "Full administrative access within a tenant" },
+      { "name": "USER", "description": "Standard authenticated end user" },
+      { "name": "SUPPORT", "description": "Read-mostly back-office access within a tenant" },
+      { "name": "EDITOR", "description": "May create/update content within a tenant" },
+      { "name": "SERVICE", "description": "Assigned to service accounts calling internal service-to-service APIs" },
+      { "name": "PLATFORM_ADMIN", "description": "Cross-tenant platform operations role (bypasses tenant isolation)" }
+    ]
+  },
+  "clientScopes": [
+    {
+      "name": "enterprise-claims",
+      "description": "Custom claims (tenant, clearance) used by the resource services for ABAC",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "tenant",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "tenant",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "tenant",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "clearance",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "clearance",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "clearance",
+            "jsonType.label": "int"
+          }
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "web-app",
+      "name": "Interactive web / test client",
+      "description": "Public client for the authorization_code flow; direct-access-grants left on ONLY to make curl-based demoing easy — disable it in a real deployment.",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "implicitFlowEnabled": false,
+      "redirectUris": ["http://localhost:3000/*", "http://localhost:8080/*", "http://localhost:8085/*"],
+      "webOrigins": ["+"],
+      "defaultClientScopes": ["web-origins", "acr", "profile", "email", "roles", "enterprise-claims"]
+    },
+    {
+      "clientId": "order-service",
+      "name": "order-service (service-to-service caller)",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "secret": "order-service-secret",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "defaultClientScopes": ["roles", "enterprise-claims"]
+    },
+    {
+      "clientId": "user-service",
+      "name": "user-service (resource server)",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "protocol": "openid-connect",
+      "secret": "user-service-secret"
+    },
+    {
+      "clientId": "admin-service",
+      "name": "admin-service (resource server)",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "protocol": "openid-connect",
+      "secret": "admin-service-secret"
+    }
+  ],
+  "users": [
+    {
+      "username": "alice",
+      "email": "alice@enterprise.example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "Admin",
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }],
+      "attributes": { "tenant": ["tenant-a"], "clearance": ["3"] },
+      "realmRoles": ["ADMIN", "USER"]
+    },
+    {
+      "username": "bob",
+      "email": "bob@enterprise.example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Bob",
+      "lastName": "User",
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }],
+      "attributes": { "tenant": ["tenant-a"], "clearance": ["1"] },
+      "realmRoles": ["USER"]
+    },
+    {
+      "username": "carol",
+      "email": "carol@enterprise.example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Carol",
+      "lastName": "Support",
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }],
+      "attributes": { "tenant": ["tenant-a"], "clearance": ["2"] },
+      "realmRoles": ["SUPPORT", "USER"]
+    },
+    {
+      "username": "dave",
+      "email": "dave@enterprise.example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Dave",
+      "lastName": "Editor",
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }],
+      "attributes": { "tenant": ["tenant-b"], "clearance": ["2"] },
+      "realmRoles": ["EDITOR", "USER"]
+    },
+    {
+      "username": "root-admin",
+      "email": "root-admin@enterprise.example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Root",
+      "lastName": "PlatformAdmin",
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }],
+      "attributes": { "tenant": ["tenant-a"], "clearance": ["3"] },
+      "realmRoles": ["PLATFORM_ADMIN", "ADMIN", "USER"]
+    },
+    {
+      "username": "service-account-order-service",
+      "enabled": true,
+      "serviceAccountClientId": "order-service",
+      "realmRoles": ["SERVICE"]
+    }
+  ]
+}

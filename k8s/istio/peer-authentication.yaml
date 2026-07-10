@@ -1,0 +1,12 @@
+# Every pod-to-pod connection in this namespace must use mutual TLS — Istio issues each pod a
+# SPIFFE identity certificate (spiffe://cluster.local/ns/enterprise-security/sa/<serviceaccount>)
+# and refuses plaintext. This is the mesh-level analogue of the app-level JWT checks: it proves
+# *which workload* is calling, independent of whatever bearer token that workload presents.
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: enterprise-security
+spec:
+  mtls:
+    mode: STRICT

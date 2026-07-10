@@ -1,0 +1,22 @@
+# Illustrates that mesh identity governs the data layer too, not just HTTP APIs: only the
+# workloads that actually own a database on this instance may open a connection to it, checked
+# against the mTLS-issued SPIFFE identity regardless of what DB credentials the connection itself
+# presents.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: postgres-authz
+  namespace: enterprise-security
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/enterprise-security/sa/user-service
+              - cluster.local/ns/enterprise-security/sa/order-service
+              - cluster.local/ns/enterprise-security/sa/admin-service
+              - cluster.local/ns/enterprise-security/sa/default
