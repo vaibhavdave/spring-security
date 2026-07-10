@@ -91,24 +91,117 @@ This starts Postgres, Keycloak (auto-imports the realm), and the three services:
 
 ### Option B — Kubernetes + Istio (the "real" deployment shape)
 
-Requires a cluster with Istio installed and `istioctl`/`kubectl` available, plus the three service
-images built and loadable into the cluster (e.g. `kind load docker-image` after building each
-service's `Dockerfile`, or push to a registry the cluster can pull from).
+Steps below use [`kind`](https://kind.sigs.k8s.io/) as the reference local cluster since it's the
+easiest to reproduce anywhere; substitute your own cluster (minikube, EKS, GKE, AKS, ...) by
+skipping the `kind`-specific steps (cluster creation, image loading) and instead pushing images to
+a registry your cluster can pull from. Every command below was reviewed for correctness but not
+executed end-to-end — this sandbox has no `kubectl`/`istioctl`/`dockerd` — so validate with
+`kubectl kustomize k8s/istio` and `istioctl analyze` before trusting it against a real cluster.
+
+**Prerequisites**: `docker`, `kind`, `kubectl`, `istioctl` ([install guide](https://istio.io/latest/docs/setup/getting-started/#download)).
+
+**1. Create the cluster**
 
 ```bash
-# Build images (repeat per service)
-docker build -f user-service/Dockerfile -t enterprise-security/user-service:latest .
+kind create cluster --name enterprise-security
+kubectl cluster-info --context kind-enterprise-security
+```
+
+**2. Install Istio**
+
+```bash
+istioctl install --set profile=demo -y
+kubectl get pods -n istio-system   # wait for istiod + istio-ingressgateway to be Running
+```
+
+The `demo` profile enables the ingress gateway and sane defaults for local use; a production
+install would pick a minimal profile and layer on exactly the components needed.
+
+**3. Build the service images and load them into kind**
+
+`kind` clusters can't pull from your local Docker daemon directly, so images have to be loaded in
+explicitly.
+
+```bash
+docker build -f user-service/Dockerfile  -t enterprise-security/user-service:latest  .
 docker build -f order-service/Dockerfile -t enterprise-security/order-service:latest .
 docker build -f admin-service/Dockerfile -t enterprise-security/admin-service:latest .
 
-# Apply base resources + Istio security config
+kind load docker-image enterprise-security/user-service:latest  --name enterprise-security
+kind load docker-image enterprise-security/order-service:latest --name enterprise-security
+kind load docker-image enterprise-security/admin-service:latest --name enterprise-security
+```
+
+**4. Apply the manifests**
+
+```bash
+# Sanity-check the rendered output first
+kubectl kustomize k8s/istio | less
+
 kubectl apply -k k8s/istio
 ```
 
 `k8s/istio/kustomization.yaml` layers Istio's `Gateway`/`VirtualService`/`PeerAuthentication`/
-`RequestAuthentication`/`AuthorizationPolicy` on top of `k8s/base` (namespace, Postgres, Keycloak,
-the three services). Point `curl` at the Istio ingress gateway with `Host: api.enterprise-security.local`
-(or add that host to `/etc/hosts` against the gateway's external IP).
+`RequestAuthentication`/`AuthorizationPolicy` on top of `k8s/base` (namespace with
+`istio-injection=enabled`, Postgres, Keycloak, the three services).
+
+**5. Wait for everything to come up**
+
+```bash
+kubectl -n enterprise-security get pods -w
+```
+
+Each pod should show `2/2` containers ready (the app container plus the injected Istio sidecar).
+Keycloak takes the longest (Postgres has to be ready first, then Keycloak imports the realm on
+startup) — give it a minute or two.
+
+```bash
+kubectl -n enterprise-security rollout status deployment/keycloak
+kubectl -n enterprise-security rollout status deployment/user-service
+kubectl -n enterprise-security rollout status deployment/order-service
+kubectl -n enterprise-security rollout status deployment/admin-service
+```
+
+**6. Verify the mesh security actually took effect**
+
+```bash
+# STRICT mTLS should show STRICT for every workload in the namespace
+istioctl x describe pod -n enterprise-security \
+  $(kubectl -n enterprise-security get pod -l app=user-service -o jsonpath='{.items[0].metadata.name}')
+
+# No config errors/warnings
+istioctl analyze -n enterprise-security
+```
+
+**7. Reach the services**
+
+`kind` doesn't provision a cloud LoadBalancer, so port-forward the ingress gateway rather than
+expecting an external IP:
+
+```bash
+kubectl -n istio-system port-forward svc/istio-ingressgateway 8080:80
+```
+
+Then, in another terminal, everything is reachable through that gateway with the configured
+`Host` header:
+
+```bash
+curl -H "Host: api.enterprise-security.local" \
+  http://localhost:8080/realms/enterprise/.well-known/openid-configuration
+```
+
+(`/etc/hosts` mapping `api.enterprise-security.local` to `127.0.0.1` avoids needing the `-H Host`
+flag on every request.) From here, the example requests further down in this README apply the
+same way — just target `http://api.enterprise-security.local:8080` instead of `localhost:<port>`,
+and note that `/internal/**` on `user-service` deliberately isn't reachable this way at all (see
+`k8s/istio/virtualservice.yaml`) — only `order-service`'s in-mesh calls can reach it.
+
+**8. Tear down**
+
+```bash
+kubectl delete -k k8s/istio
+kind delete cluster --name enterprise-security
+```
 
 ## Test users (seeded by `keycloak/realm-export.json`)
 
