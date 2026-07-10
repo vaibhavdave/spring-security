@@ -1,0 +1,48 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: admin-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:admin_service}
+    username: ${DB_USERNAME:admin_service}
+    password: ${DB_PASSWORD:admin_service}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8080/realms/enterprise}
+
+security:
+  resource:
+    client-id: admin-service
+  # Demo-only plaintext registry — see ApiKeyProperties for the production caveat.
+  api-keys:
+    partner-acme:
+      key: ${PARTNER_ACME_API_KEY:demo-partner-acme-key}
+      authorities:
+        - ROLE_PARTNER
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+logging:
+  pattern:
+    console: "%d{ISO8601} %-5level [%thread] %logger{36} - %msg [tenant=%X{auditTenant}] %n"
