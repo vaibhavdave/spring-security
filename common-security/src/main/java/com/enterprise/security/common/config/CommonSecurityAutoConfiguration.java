@@ -21,7 +21,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
  * SecurityConfig composes into its own HttpSecurity filter chain.
  */
 @AutoConfiguration
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 @EnableConfigurationProperties({ApiKeyProperties.class, JwtRoleMappingProperties.class})
 public class CommonSecurityAutoConfiguration {
 

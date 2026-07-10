@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: update
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # jwk-set-uri resolves lazily (only when a token is actually decoded), unlike
+          # issuer-uri which triggers eager OIDC discovery at context startup — keeps this
+          # test context bootable without a running Keycloak.
+          jwk-set-uri: http://localhost:65535/realms/test/protocol/openid-connect/certs

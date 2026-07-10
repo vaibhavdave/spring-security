@@ -21,6 +21,7 @@ allprojects {
 
 subprojects {
     apply(plugin = "java")
+    apply(plugin = "jvm-test-suite")
     apply(plugin = "io.spring.dependency-management")
 
     java {
@@ -42,8 +43,12 @@ subprojects {
         tasks.findByName("bootJar")?.let { it.enabled = false }
     }
 
-    tasks.withType<Test> {
-        useJUnitPlatform()
+    testing {
+        suites {
+            named<JvmTestSuite>("test") {
+                useJUnitJupiter()
+            }
+        }
     }
 
     tasks.withType<JavaCompile> {
@@ -51,7 +56,4 @@ subprojects {
         options.compilerArgs.add("-parameters")
     }
 
-    dependencies {
-        "testImplementation"("org.junit.jupiter:junit-jupiter")
-    }
 }
