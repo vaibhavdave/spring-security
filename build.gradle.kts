@@ -29,11 +29,17 @@ subprojects {
         }
     }
 
+    the<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension>().apply {
+        imports {
+            mavenBom("org.springframework.boot:spring-boot-dependencies:3.3.4")
+        }
+    }
+
     if (project.name in bootModules) {
         apply(plugin = "org.springframework.boot")
     } else {
         // library modules (common-security): produce a plain jar, no executable boot jar
-        tasks.findByName("bootJar")?.enabled(false)
+        tasks.findByName("bootJar")?.let { it.enabled = false }
     }
 
     tasks.withType<Test> {
