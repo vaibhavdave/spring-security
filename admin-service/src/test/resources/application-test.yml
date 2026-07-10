@@ -12,3 +12,10 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: http://localhost:65535/realms/test/protocol/openid-connect/certs
+
+security:
+  api-keys:
+    partner-acme:
+      key: test-partner-key
+      authorities:
+        - ROLE_PARTNER
