@@ -25,6 +25,13 @@ left for Spring Security to own is exactly what it's good at: validating tokens,
 Each service is an independent Spring Boot application with its own database, port, and
 Kubernetes Deployment/ServiceAccount.
 
+## Documentation
+
+For a diagram-first walkthrough of the architecture, request flows, authorization model, and
+deployment shape, see [`docs/`](docs/README.md) — versioned Markdown + Mermaid, or the same
+material as one polished interactive page:
+[**Security Blueprint**](https://claude.ai/code/artifact/68c626dc-512a-4937-aa83-2094b4b0ec23).
+
 ## Security practices demonstrated
 
 **Authentication**
