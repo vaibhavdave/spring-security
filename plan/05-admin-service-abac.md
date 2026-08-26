@@ -19,6 +19,11 @@ resources in this document's tenant, and does their clearance cover this documen
 classification." That's attribute-based access control (ABAC), and it's implemented once, in one
 class, layered *underneath* `@PreAuthorize` rather than replacing it.
 
+**If RBAC and ABAC aren't already clearly distinct in your head, read
+[`CONCEPTS.md` §3](CONCEPTS.md#3-rbac-vs-abac) before Task 4** — the whole point of this story is
+a check that RBAC alone can't express, and the ordering inside `checkAccess` (tenant, then
+clearance, then role) only makes sense once you see why role-based checks aren't enough here.
+
 ## Tasks
 
 ### Task 1 — Module dependencies

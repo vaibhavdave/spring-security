@@ -20,6 +20,11 @@ injection automatic once Story 09 installs it. Assembled with [`kind`](https://k
 as the reference local cluster (installed in Story 00); everything here also applies unmodified to
 a real cluster (minikube, EKS, GKE, AKS), only the image-loading step in Task 6 differs.
 
+**New to `Deployment`/`Service`/`ServiceAccount`/`Secret`/Kustomize? Read
+[`CONCEPTS.md` §9–10](CONCEPTS.md#9-kubernetes-core-objects) first** — in particular, note *why*
+each service gets its own `ServiceAccount` rather than a shared default one (Task 5's callout) —
+that single decision is what Story 09's Istio identity rules will key off of later.
+
 ## Tasks
 
 ### Task 1 — Namespace

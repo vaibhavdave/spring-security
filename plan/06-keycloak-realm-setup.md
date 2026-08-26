@@ -20,6 +20,11 @@ Rather than clicking through the Keycloak admin console by hand (error-prone and
 this realm is defined as a single importable JSON file, `keycloak/realm-export.json`, that
 Keycloak loads automatically on startup via `--import-realm` (wired up in Story 07).
 
+**If "issuer," "claim," or "protocol mapper" are new terms, read
+[`CONCEPTS.md` §1](CONCEPTS.md#1-tokens--identity-jwt-bearer-tokens-claims) first** — this story is
+where the `tenant`/`clearance` claims every earlier story's authorization logic reads actually get
+put into the token in the first place.
+
 ## Tasks
 
 ### Task 1 — Realm-level settings

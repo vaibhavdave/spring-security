@@ -20,6 +20,11 @@ authorization rules that don't trust any single layer alone. If you've read
 `docs/04-security-layers.md` in the finished repo, this story builds layers 1–4 of that stack —
 Stories 02–05 already built layers 5–8.
 
+**New to service meshes, sidecars, mTLS, or SPIFFE identity? Read
+[`CONCEPTS.md` §11–12](CONCEPTS.md#11-service-mesh--istio) before starting** — this story only
+makes sense once you can distinguish "the mesh checked this" from "Spring Security checked this,"
+since almost every resource here deliberately duplicates a check Stories 02–05 already built.
+
 ## Tasks
 
 ### Task 1 — Install Istio on the cluster

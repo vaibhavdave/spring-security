@@ -19,6 +19,10 @@ only the Spring Security layers built in Stories 02–05 are active. That's inte
 exists for fast iteration on application-level security, and Story 08/09 layer the "real"
 deployment shape on top later.
 
+**New to Docker/multi-stage builds or Compose? Read
+[`CONCEPTS.md` §8](CONCEPTS.md#8-containers--docker-basics) first** — in particular, the
+service-name-not-`localhost` networking rule matters throughout this story's `docker-compose.yml`.
+
 ## Tasks
 
 ### Task 1 — Database seed script

@@ -23,6 +23,11 @@ Everything in this story gets wired together by **one** auto-configuration class
 (Task 8) — build the pieces first, they won't do anything on their own until that class registers
 them as beans.
 
+**New to JWTs, or to Spring Security's filter chain vs. method security?** Read
+[`CONCEPTS.md` §1 and §4](CONCEPTS.md#1-tokens--identity-jwt-bearer-tokens-claims) before starting
+— this story builds the JWT role mapping and the filters every later service composes, and it's
+much easier to follow if "claim," "resource server," and "filter chain" aren't new vocabulary.
+
 ## Tasks
 
 ### Task 1 — Module dependencies

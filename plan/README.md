@@ -8,6 +8,14 @@ without needing any other context.
 
 ## How to use this plan
 
+- **New to Spring Security, OAuth2/JWT, Kubernetes, or Istio? Read [`CONCEPTS.md`](CONCEPTS.md)
+  first**, or at least skim its table of contents. Each story below is precise about *what* to
+  build, but assumes you already know what a JWT claim is, how a Spring Security filter chain
+  differs from method security, or what a Kubernetes `Service` does. `CONCEPTS.md` explains those
+  underlying ideas once, in plain terms, so a story's own explanation (which stays focused on *this
+  project's* specific decisions) actually lands instead of reading as unfamiliar jargon. It's a
+  companion reference, not a prerequisite story — nothing in it is project-specific, and an engineer
+  who already knows a given topic can skip straight past it.
 - **Work the stories in order.** Each one names its dependencies and what it unlocks; nothing
   later is buildable before its prerequisites are done.
 - **Each story ends in a working, testable state.** Every "Definition of done" checklist is a real
@@ -22,6 +30,9 @@ without needing any other context.
   the acceptance-criteria reference for that story, not a shortcut to skip the work.
 
 ## Story sequence
+
+Start with [`CONCEPTS.md`](CONCEPTS.md) if any of the technologies below are new to you — it's
+background reading, not a numbered story, so it isn't in this table.
 
 | # | Story | What it builds |
 |---|---|---|

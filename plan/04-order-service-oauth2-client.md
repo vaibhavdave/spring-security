@@ -11,6 +11,11 @@ OAuth2 client (for one outbound call to `user-service`) — the two concerns con
 independently, on purpose, so it's obvious in the code which credentials authorize which
 direction of traffic.
 
+**If "client-credentials grant" doesn't already mean something concrete to you, read
+[`CONCEPTS.md` §2](CONCEPTS.md#2-oauth2-and-oidc-the-grants-this-project-actually-uses) first** —
+this story is entirely about a service authenticating as *itself*, which is a different flow from
+the human-login token you validated in Story 03, and the distinction matters for everything below.
+
 ## Context
 
 Base package: `com.enterprise.security.orderservice`. This is the story where the system stops
