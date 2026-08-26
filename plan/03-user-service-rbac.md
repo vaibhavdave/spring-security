@@ -18,6 +18,12 @@ another service — it only *validates* incoming JWTs (via `common-security`'s
 authentication at all) live in `SecurityConfig`; everything about *whose* data a caller may
 touch lives in `UserService`'s method annotations — keep that split as you build this.
 
+**If `@PreAuthorize`/`@PostAuthorize`/`@Secured` or the SpEL expressions inside them (`#id`,
+`authentication.name`, `returnObject.tenantId`) are unfamiliar, read
+[`CONCEPTS.md` §3–5](CONCEPTS.md#3-rbac-vs-abac) first** — this story is where RBAC and ownership
+checks are introduced, and Task 4's four methods are exactly the four shapes those sections
+explain.
+
 ## Tasks
 
 ### Task 1 — Module dependencies
